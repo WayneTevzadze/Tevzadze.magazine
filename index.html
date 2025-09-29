@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tevzadzde — Магазин автозапчастей</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;margin:0;background:#f7fafc;color:#111}
+  header{background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:16px;max-width:1100px;margin:0 auto}
+  .logo{display:flex;align-items:center;gap:12px}
+  .mark{width:44px;height:44px;background:#111;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+  main{max-width:1100px;margin:24px auto;padding:0 16px}
+  .search input{width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:18px}
+  .card{background:#fff;border:1px solid #e5e7eb;padding:12px;border-radius:10px;display:flex;flex-direction:column;justify-content:space-between;height:220px}
+  .card .title{font-weight:600;margin-top:8px}
+  .card .brand{color:#6b7280;font-size:13px}
+  .card .price{font-weight:700;margin-top:8px}
+  .btn{background:#0ea5a4;color:#fff;padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
+  .cart{position:fixed;right:16px;bottom:16px;background:#111;color:#fff;padding:12px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.12);display:flex;align-items:center;gap:10px;z-index:999}
+  .drawer{position:fixed;right:0;top:0;width:360px;height:100%;background:#fff;box-shadow:-8px 0 24px rgba(2,6,23,.12);transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column}
+  .drawer.open{transform:translateX(0)}
+  .drawer .head{padding:16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+  .drawer .list{padding:12px;overflow:auto;flex:1}
+  .drawer .foot{padding:12px;border-top:1px solid #e5e7eb}
+  footer{padding:20px;text-align:center;color:#6b7280;font-size:14px;margin-top:40px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="mark">T</div>
+    <div>
+      <div style="font-size:12px;color:#6b7280">Интернет-магазин</div>
+      <div style="font-weight:700">Tevzadzde — Запчасти для авто</div>
+    </div>
+  </div>
+  <nav style="font-size:14px;color:#374151;display:flex;gap:12px">
+    <a href="#" onclick="scrollToSection()">Каталог</a>
+    <a href="#" onclick="alert('Доставка: по договорённости')">Доставка</a>
+    <a href="#" onclick="alert('Контакты: example@example.com')">Контакты</a>
+  </nav>
+</header>
+
+<main>
+  <div class="search"><input id="q" placeholder="Поиск по товарам..." oninput="render()" /></div>
+
+  <div id="grid" class="grid" aria-live="polite"></div>
+</main>
+
+<button class="cart" onclick="toggleCart()" id="cartBtn">Корзина (<span id="count">0</span>)</button>
+
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="head"><strong>Корзина</strong><button onclick="clearCart()">Очистить</button></div>
+  <div class="list" id="cartList"></div>
+  <div class="foot"><div style="display:flex;justify-content:space-between;align-items:center"><div>Итого: <strong id="total">€0.00</strong></div><button class="btn" onclick="checkout()">Оформить</button></div></div>
+</div>
+
+<footer>© Tevzadzde</footer>
+
+<script>
+const PRODUCTS = [
+  {id:'p1',title:'Воздушный фильтр Honda Civic',brand:'HCP',price:19.5,stock:12},
+  {id:'p2',title:'Тормозные колодки передние',brand:'BrakePro',price:45.0,stock:6},
+  {id:'p3',title:'Масляный фильтр 4L',brand:'OilMax',price:12.0,stock:20},
+  {id:'p4',title:'Свечи зажигания (4 шт)',brand:'SparkX',price:29.9,stock:8},
+  {id:'p5',title:'Ремень ГРМ',brand:'TimingPlus',price:89.0,stock:3}
+];
+
+let CART = JSON.parse(localStorage.getItem('tevz_cart')||'[]');
+
+function save(){localStorage.setItem('tevz_cart',JSON.stringify(CART));}
+
+function addToCart(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  let f = CART.find(x=>x.id===id);
+  if(f){f.qty+=1;} else {CART.push({id:p.id,title:p.title,price:p.price,qty:1})}
+  save(); renderCart(); updateCount();
+}
+
+function removeFromCart(id){
+  CART = CART.filter(x=>x.id!==id); save(); renderCart(); updateCount();
+}
+
+function clearCart(){CART=[]; save(); renderCart(); updateCount();}
+
+function total(){return CART.reduce((s,i)=>s+i.price*i.qty,0)}
+
+function updateCount(){document.getElementById('count').textContent = CART.reduce((s,i)=>s+i.qty,0)}
+
+function renderCart(){
+  const el = document.getElementById('cartList'); el.innerHTML='';
+  if(CART.length===0){el.innerHTML='<div style="color:#6b7280">Корзина пуста</div>'; document.getElementById('total').textContent='€0.00'; return;}
+  CART.forEach(it=>{
+    const item = document.createElement('div'); item.style.display='flex'; item.style.justifyContent='space-between'; item.style.padding='8px 0';
+    item.innerHTML = `<div><div style="font-weight:600">${it.title}</div><div style="color:#6b7280;font-size:13px">${it.qty} × €${it.price.toFixed(2)}</div></div><div><button onclick="removeFromCart('${it.id}')" style="padding:6px;border-radius:6px;border:1px solid #e5e7eb">—</button></div>`;
+    el.appendChild(item);
+  });
+  document.getElementById('total').textContent = '€' + total().toFixed(2);
+}
+
+function toggleCart(){ const d=document.getElementById('drawer'); const open = d.classList.contains('open'); d.classList.toggle('open'); d.setAttribute('aria-hidden', String(!open)); }
+function checkout(){ alert('Это демо. Для реальных заказов подключите платежи. Общая сумма: €' + total().toFixed(2)); }
+
+function render(){
+  const q = document.getElementById('q').value.toLowerCase();
+  const grid = document.getElementById('grid'); grid.innerHTML='';
+  const items = PRODUCTS.filter(p=>p.title.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));
+  items.forEach(p=>{
+    const card = document.createElement('div'); card.className='card';
+    card.innerHTML = `<div><div style="height:80px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af">Фото</div><div class="title">${p.title}</div><div class="brand">${p.brand}</div></div><div style="display:flex;align-items:center;justify-content:space-between"><div class="price">€${p.price.toFixed(2)}</div><button class="btn" onclick="addToCart('${p.id}')">Добавить</button></div>`;
+    grid.appendChild(card);
+  });
+}
+
+function scrollToSection(){ window.scrollTo({top:200,behavior:'smooth'}) }
+
+// Инициализация
+render(); renderCart(); updateCount();
+</script>
+</body>
+</html>
