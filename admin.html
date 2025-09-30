@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админка - Tevzadzde Shop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Админка</h1>
+  <div id="login-section">
+    <input type="password" id="password" placeholder="Введите пароль">
+    <button onclick="login()">Войти</button>
+  </div>
+
+  <div id="admin-section" style="display:none;">
+    <h2>Добавить товар</h2>
+    <input type="text" id="name" placeholder="Название"><br>
+    <input type="number" id="price" placeholder="Цена"><br>
+    <input type="text" id="image" placeholder="URL картинки"><br>
+    <button onclick="addProduct()">Добавить</button>
+
+    <h2>Список товаров</h2>
+    <ul id="product-list"></ul>
+  </div>
+  <script src="admin.js"></script>
+</body>
+</html>
