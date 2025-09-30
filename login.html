@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Авторизация</title>
+  <script type="module" src="auth.js"></script>
+</head>
+<body>
+  <h2>Вход в магазин</h2>
+
+  <!-- Gmail -->
+  <button id="googleLogin">Войти через Gmail</button>
+  <br><br>
+
+  <!-- Телефон -->
+  <input type="text" id="phone" placeholder="+79999999999">
+  <div id="recaptcha-container"></div>
+  <button id="sendCode">Получить код</button>
+  <br>
+  <input type="text" id="code" placeholder="Введите код из SMS">
+  <button id="verifyCode">Подтвердить</button>
+</body>
+</html>
